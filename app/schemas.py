@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
 
 class UserCreate(BaseModel):
@@ -30,3 +31,12 @@ class BookResponse(BaseModel):
 class RentalCreate(BaseModel):
     user_id: int
     book_id: int
+
+class RentalResponse(BaseModel):
+    id: int
+    user_id: int
+    book_id: int
+    rented_at: datetime
+    returned_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True

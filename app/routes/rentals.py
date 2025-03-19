@@ -1,19 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import datetime
 from ..database import get_db
 from ..models import Rental, Book
-from ..schemas import RentalCreate
+from ..schemas import RentalCreate, RentalResponse
 
 router = APIRouter(prefix="/rentals", tags=["Rentals"])
 
-@router.post("/")
+@router.post("/", response_model=RentalResponse)
 def rent_book(rental: RentalCreate, db: Session = Depends(get_db)):
-    book = db.query(Book).filter(Book.id == rental.book_id).first()
-    if not book or book.is_rented:
+    db_book = db.query(Book).filter(Book.id == rental.book_id, Book.available == True).first()
+    if not db_book:
         raise HTTPException(status_code=400, detail="Book is not available")
     
-    new_rental = Rental(user_id=rental.user_id, book_id=rental.book_id)
-    book.is_rented = True
+    db_book.available = False
+    new_rental = Rental(**rental.dict())
     db.add(new_rental)
     db.commit()
-    return {"message": "Book rented successfully"}
+    db.refresh(new_rental)
+    return new_rental
+
+@router.put("/{rental_id}/return")
+def return_book(rental_id: int, db: Session = Depends(get_db)):
+    rental = db.query(Rental).filter(Rental.id == rental_id).first()
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    rental.book.available = True
+    rental.returned_at = datetime.datetime.utcnow()
+    db.commit()
+    return {"message": "Book returned successfully"}
