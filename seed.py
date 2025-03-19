@@ -5,10 +5,10 @@ from app.auth import get_password_hash
 
 db: Session = SessionLocal()
 
-user1 = User(name="Alice", email="alice@example.com", password=get_password_hash("password123"))
-book1 = Book(title="The Great Gatsby", author="F. Scott Fitzgerald")
+user1 = User(name="Shubham", email="shubhambhoilkar@gmail.com", password=get_password_hash("sam@9601"))
+book1 = Book(title="REWORK", author="Jason Fried and David Heinemeier Hansson ")
 
 db.add_all([user1, book1])
 db.commit()
 
-print("Dummy data inserted successfully!")
+print("Book Data Inserted Successfully!")
